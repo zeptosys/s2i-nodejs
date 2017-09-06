@@ -52,8 +52,15 @@ COPY ./s2i/bin/ $STI_SCRIPTS_PATH
 # Copy extra files to the image.
 COPY ./root/ /
 
-# Copy extra files to the image.
-COPY ./root/opt/app-root/oracle/ /opt/app-root/oracle/
+ADD oracle-instantclient*.rpm /tmp/
+
+RUN  yum -y install /tmp/oracle-instantclient*.rpm && \
+     yum clean all && \
+     rm -f /tmp/oracle-instantclient*.rpm && \
+     echo /usr/lib/oracle/12.2/client64/lib > /etc/ld.so.conf.d/oracle-instantclient12.2.conf && \
+     ldconfig
+
+ENV PATH=$PATH:/usr/lib/oracle/12.2/client64/bin
 
 # Drop the root user and make the content of /opt/app-root owned by user 1001
 RUN chown -R 1001:0 /opt/app-root && chmod -R ug+rwx /opt/app-root
